@@ -1,0 +1,22 @@
+# ===== 隐私与个人数据（绝不提交） =====
+# 学生课表含真实姓名/学号
+我的课表.docx
+课表*.txt
+课表-*.txt
+
+# ===== 敏感信息 =====
+.env
+*.key
+DEEPSEEK_API_KEY
+
+# ===== 运行时数据（可重建） =====
+index.json
+__pycache__/
+*.pyc
+db_debug.txt
+
+# ===== 调试残留 =====
+answer*.txt
+debug*.txt
+check*.txt
+test_*.py
