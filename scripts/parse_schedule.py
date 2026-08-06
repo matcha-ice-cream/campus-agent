@@ -57,7 +57,15 @@ def extract_student_info(doc):
 
 
 def extract_courses(doc):
-    """遍历所有表格单元格，提取课程-老师映射"""
+    """
+    遍历所有表格单元格，提取课程信息。
+    用正则直接匹配整个单元格文本（避免逐行 split 的字符编码问题）。
+    单元格结构：
+      课程名
+      课程号
+      (周次) (节次) 北校区 教室  老师   ← 可重复多次（不同周次/教室）
+      班级:... 人数:...
+    """
     pairs = []
     for table in doc.tables:
         for row in table.rows:
@@ -65,27 +73,23 @@ def extract_courses(doc):
                 text = cell.text
                 if not text.strip():
                     continue
-                # 整个单元格作为文本：按课程块特征切分
-                # 每个课程块以"课程名\n课程号\n..."开头，老师名在教室号后
-                # 用正则找所有 (课程名, 老师名) 组合
-                for m in TEACHER_PATTERN.finditer(text):
-                    teacher = (m.group(1) or m.group(2)).strip()
-                    # 课程名：在老师匹配位置之前，找块内第一行的第一个词
-                    head = text[:m.start()]
-                    # 取最后一个 "课程名\n课程号" 块
-                    blocks = re.split(r"[\n]", head)
-                    course = ""
-                    for b in reversed(blocks):
-                        b = b.strip()
-                        # 跳过纯数字块（课程号 773308、391015.Y2、人数 97 等）
-                        if re.match(r"^[\d.]+", b):
-                            continue
-                        cm = re.match(r"^[\u4e00-\u9fffA-Za-z0-9]+", b)
-                        if cm:
-                            course = cm.group(0)
-                            break
-                    if teacher and course:
-                        pairs.append({"course": course, "teacher": teacher})
+                # 课程名 = 单元格第一行
+                first_line = text.split("\n")[0].strip()
+                if not (0 < len(first_line) < 30):
+                    continue
+                # 匹配所有上课段：(周次) (节次) 北校区 教室 老师
+                segs = re.findall(
+                    r"\(([\d~,]+周)\)\s*\((\d+-\d+节)\)\s*北校区\s*(北区[\d_]+)[\s\xa0]*([\u4e00-\u9fff]{2,3})",
+                    text,
+                )
+                for week, period, room, teacher in segs:
+                    pairs.append({
+                        "course": first_line,
+                        "teacher": teacher,
+                        "period": period.replace("节", ""),
+                        "room": room,
+                        "week": week,
+                    })
     return pairs
 
 

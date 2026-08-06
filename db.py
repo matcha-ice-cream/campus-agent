@@ -186,15 +186,25 @@ def add_schedule(student: dict, courses: list[dict]) -> str:
     if os.path.exists(filepath):
         return f"该班级（{class_name}）的课表已收录，无需重复上传。"
 
-    # 生成课表文本
+    # 生成课表文本（不存储个人姓名，保护隐私）
     lines = [
         f"# {class_name} 课表",
-        f"# 年级：{student.get('grade', '')} | 专业：{student.get('major', '')} | 姓名：{student.get('name', '')}",
+        f"# 年级：{student.get('grade', '')} | 专业：{student.get('major', '')}",
         f"# 来源：学生上传 | 采集时间：{_today()}",
         "",
     ]
     for c in courses:
-        lines.append(f"- {c['course']}：{c['teacher']}")
+        detail = f"- {c['course']}：{c['teacher']}"
+        parts = []
+        if c.get("period"):
+            parts.append(f"第{c['period']}节")
+        if c.get("room"):
+            parts.append(c["room"])
+        if c.get("week"):
+            parts.append(f"（{c['week']}）")
+        if parts:
+            detail += " " + " ".join(parts)
+        lines.append(detail)
 
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

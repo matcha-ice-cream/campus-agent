@@ -94,9 +94,10 @@ async def upload_schedule(file: UploadFile = File(...)):
 
     # 入库（按班级去重）
     message = add_schedule(data["student"], data["courses"])
+    privacy_note = "说明：仅提取课程与任课老师信息用于查询，不存储个人姓名。"
     return {
         "success": True,
-        "message": message,
+        "message": message + " " + privacy_note,
         "student": data["student"],
         "course_count": len(data["courses"]),
         "teachers": data["teachers"],

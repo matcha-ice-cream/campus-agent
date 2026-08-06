@@ -167,7 +167,8 @@ def agent_query(question: str) -> tuple[str, list[str]]:
         {"role": "user", "content": question},
     ]
     used_sources: list[str] = []
-    tool_used = False  # 是否已执行过至少一次工具调用（TIME 或 SEARCH）
+    tool_used = False  # 是否执行过任何工具（TIME/SEARCH/WEB_SEARCH）
+    searched = False   # 是否检索过知识库（SEARCH/WEB_SEARCH）——FINAL 的硬性要求
     time_checked = False  # 是否已获取过当前时间
     web_used = False  # 是否已执行过网络搜索
     # 时间相关问题关键词
@@ -249,9 +250,9 @@ def agent_query(question: str) -> tuple[str, list[str]]:
 
     for step in range(MAX_STEPS):
         # 强制时间注入：问题含时间词且尚未获取时间时，先给 LLM 当前时间
+        # 注意：TIME 不算"检索过知识库"，FINAL 仍要求至少一次 SEARCH
         if not time_checked and any(kw in question for kw in TIME_KEYWORDS):
             time_checked = True
-            tool_used = True
             messages.append({"role": "user", "content": f"[当前时间：{_now_str()}]"})
 
         # 网络结果已就绪但 LLM 可能继续 SEARCH：提示可以直接回答
@@ -284,8 +285,11 @@ def agent_query(question: str) -> tuple[str, list[str]]:
             tokens.append((cmd, arg))
 
         if not tokens:
-            # 没有任何指令：直接当最终回答返回
-            return reply.strip(), used_sources
+            # 没有任何指令：可能是直接回答，但没检索过知识库就必须先检索
+            if searched:
+                return reply.strip(), used_sources
+            messages.append({"role": "user", "content": "你还没有检索过校园信息库，不能直接回答。请先调用 SEARCH 检索相关课程/信息，再根据检索结果回答。"})
+            continue
 
         # 防编造：同一回复里既有 SEARCH/WEB_SEARCH 又有 FINAL 时，FINAL 是 LLM 编的（还没看真实结果），丢弃
         cmds_in_reply = [t[0] for t in tokens]
@@ -300,19 +304,21 @@ def agent_query(question: str) -> tuple[str, list[str]]:
                 answer = arg.strip()
                 answer = _normalize_source_line(answer)  # 来源标注合并为一行
                 answer = _clean_answer(answer)           # 合并正文单换行
-                if answer and tool_used:
+                if answer and searched:
                     return answer, used_sources
-                if answer and not tool_used:
-                    # 没获取过信息就 FINAL：提示后继续循环
-                    messages.append({"role": "user", "content": "你还没有获取任何信息，不能直接回答。请先调用 TIME 或 SEARCH。"})
+                if answer and not searched:
+                    # 没检索过知识库就 FINAL：提示后继续循环
+                    messages.append({"role": "user", "content": "你还没有检索过校园信息库，不能直接回答。请先调用 SEARCH 检索相关课程/信息，再根据检索结果回答。"})
             elif cmd == "TIME":
                 tool_used = True
                 time_checked = True
                 messages.append({"role": "user", "content": f"[{_now_str()}]"})
             elif cmd == "SEARCH":
+                searched = True
                 result_text = _run_search(arg)
                 messages.append({"role": "user", "content": result_text})
             elif cmd == "WEB_SEARCH":
+                searched = True
                 tool_used = True
                 web_used = True
                 web_text = web_search(arg)
