@@ -11,7 +11,6 @@ ReAct Agent 核心模块
 """
 
 import os
-import winreg
 import requests
 import re
 from urllib.parse import quote
@@ -107,10 +106,11 @@ SYSTEM_PROMPT = """你是郑州大学北校区校园信息助手 Agent。你可�
 
 
 def get_api_key() -> str:
-    """获取 DeepSeek API key：环境变量 → Windows 用户级注册表"""
+    """获取 DeepSeek API key：环境变量优先；Windows 下额外查注册表"""
     key = os.getenv("DEEPSEEK_API_KEY", "")
-    if not key:
+    if not key and os.name == "nt":
         try:
+            import winreg
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
                 key = winreg.QueryValueEx(k, "DEEPSEEK_API_KEY")[0]
         except Exception:
