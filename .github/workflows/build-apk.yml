@@ -46,10 +46,11 @@ jobs:
         working-directory: build_app
         run: |
           source venv/bin/activate
-          # 预下载 Android SDK 到缓存
           export ANDROIDSDK="$HOME/.buildozer/android/platform"
-          # 打包（首次会下载 SDK/NDK，约 5-10 分钟）
-          buildozer -v android debug 2>&1 | tail -50
+          # 用 yes 自动接受所有许可协议（SDK license 询问）
+          yes | buildozer -v android debug 2>&1 | tail -60
+          # 确认 APK 是否生成
+          ls -la bin/ 2>/dev/null || echo "bin 目录不存在"
         timeout-minutes: 60
 
       - name: 上传 APK 产物
