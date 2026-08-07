@@ -47,9 +47,14 @@ jobs:
         run: |
           source venv/bin/activate
           export ANDROIDSDK="$HOME/.buildozer/android/platform"
-          # 用 yes 自动接受所有许可协议（SDK license 询问）
-          # 完整日志保存到文件，失败时能看到真实错误
-          yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || { echo "=== 打包失败，完整日志尾部 ==="; tail -80 /tmp/build_full.log; exit 1; }
+          # 完整日志存文件
+          yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
+            echo "=== 打包失败，提取错误关键行 ==="
+            grep -E "ERROR|error:|Error|failed|Command failed|Cython error|undeclared|does not" /tmp/build_full.log | tail -30
+            echo "=== 完整日志最后30行 ==="
+            tail -30 /tmp/build_full.log
+            exit 1
+          }
           echo "=== 打包完成 ==="
           ls -la bin/ 2>/dev/null || echo "bin 目录不存在"
         timeout-minutes: 60
