@@ -17,8 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# Kivy 2.1.0 是 p4a 1.6 验证过的稳定版本
-requirements = python3,kivy==2.1.0,requests
+# Kivy 2.1.0 + Python 3.11（cgi 模块兼容，Python 3.13+ 移除了 cgi 导致 Kivy 编译失败）
+requirements = python3.11,kivy==2.1.0,requests
 
 # 关键：让 Kivy 的 setup.py 执行（生成 config.pxi），否则 Cython 编译报错
 android.ignore_setup_py = False
