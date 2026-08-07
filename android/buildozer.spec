@@ -17,8 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# Python 3.11 + Kivy 2.3.1（最新 p4a 支持）
-requirements = python3.11,kivy==2.3.1,requests
+# 经典稳定组合：Python 3.9 + Kivy 2.1.0（Buildozer 验证最多的配置）
+requirements = python3.9,kivy==2.1.0,requests
 
 # 关键：让 Kivy 的 setup.py 执行（生成 config.pxi），否则 Cython 编译报错
 android.ignore_setup_py = False
