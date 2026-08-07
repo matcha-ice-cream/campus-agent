@@ -1,7 +1,8 @@
 [app]
 
 # App 名称（手机桌面显示的名字）
-title = 郑大北区Agent助手
+# 注意：含中文可能导致 Gradle 打包失败，先用英文名
+title = Campus Agent
 
 # 包名（唯一标识，格式：域名反写.应用名）
 package.name = campusagent
