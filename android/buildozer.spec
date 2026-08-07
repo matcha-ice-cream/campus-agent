@@ -17,12 +17,9 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# 经典稳定组合：Python 3.9 + Kivy 2.1.0
-requirements = python3.9,kivy==2.1.0,requests
-
-# 关键：让 Kivy 的 setup.py 执行（生成 config.pxi），否则 Cython 编译报错
-# Buildozer 的正确格式是 p4a.ignore_setup_py
-p4a.ignore_setup_py = False
+# 不指定版本：p4a 用内置 Kivy recipe 下载源码并正确处理 config.pxi
+# 不设 ignore_setup_py：让 p4a 默认行为（recipe 管理）
+requirements = python3.9,kivy,requests
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE

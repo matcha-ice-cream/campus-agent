@@ -54,25 +54,10 @@ jobs:
           export ANDROIDSDK="$HOME/.buildozer/android/platform"
           # 完整日志存文件
           yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
-            echo "=== 打包失败 ==="
-            # 若因 config.pxi 失败，尝试在 Kivy 源码目录生成 config.pxi 后重试
-            KIVY_SRC=$(find .buildozer -type d -name "kivy-*" 2>/dev/null | head -1)
-            if [ -n "$KIVY_SRC" ] && grep -q "config.pxi" /tmp/build_full.log; then
-              echo "尝试生成 config.pxi: $KIVY_SRC"
-              cd "$KIVY_SRC"
-              python3 setup.py config > /tmp/config_gen.log 2>&1 || echo "config 生成失败: $(tail -5 /tmp/config_gen.log)"
-              cd -
-              yes | buildozer -v android debug > /tmp/build_full2.log 2>&1 || {
-                echo "=== 重试仍失败 ==="
-                grep -A 30 "What went wrong\|Execution failed\|config.pxi" /tmp/build_full2.log | head -40
-                cp /tmp/build_full2.log /tmp/build_full_for_artifact.log
-                exit 1
-              }
-            else
-              grep -A 30 "What went wrong\|Execution failed\|A problem occurred" /tmp/build_full.log | head -40
-              cp /tmp/build_full.log /tmp/build_full_for_artifact.log
-              exit 1
-            fi
+            echo "=== 打包失败，关键错误 ==="
+            grep -B2 -A8 "config.pxi\|What went wrong\|Execution failed\|error:" /tmp/build_full.log | head -50
+            cp /tmp/build_full.log /tmp/build_full_for_artifact.log
+            exit 1
           }
           echo "=== 打包完成 ==="
           ls -la bin/ 2>/dev/null || echo "bin 目录不存在"
