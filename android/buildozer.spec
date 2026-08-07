@@ -17,7 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-requirements = python3,kivy,requests,python-docx,pyjnius,android
+# 指定 cython 让 p4a 用兼容版本
+requirements = python3,kivy,requests,python-docx,pyjnius,android,cython
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_DOCUMENTS
