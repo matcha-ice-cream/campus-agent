@@ -17,8 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# 注意：python-docx 在 Android 交叉编译装不上（依赖冲突），且课表解析在服务器端，App 不需要它
-requirements = python3,kivy,requests
+# kivy 2.3.x 需要 Cython 3.x（p4a 默认用 0.29 导致 config.pxi 编译失败）
+requirements = python3,kivy==2.3.1,cython==3.0.11,requests
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
