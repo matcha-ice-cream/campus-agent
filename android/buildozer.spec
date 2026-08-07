@@ -17,9 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# 注意：不要加 android（不是 pip 包）和 cython（p4a 自己管理版本）
-# pyjnius 暂时去掉（Android 文件选择器需要，但先确认基础打包能通）
-requirements = python3,kivy,requests,python-docx
+# 注意：python-docx 在 Android 交叉编译装不上（依赖冲突），且课表解析在服务器端，App 不需要它
+requirements = python3,kivy,requests
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_DOCUMENTS
