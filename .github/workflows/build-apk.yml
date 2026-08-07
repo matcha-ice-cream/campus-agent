@@ -39,6 +39,8 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
+          # 先装新版 Cython（Cython 0.29 与 Python 3.10 有兼容 bug 导致编译失败）
+          pip install "cython<4"
           pip install buildozer
           buildozer --version
 
@@ -49,15 +51,23 @@ jobs:
           export ANDROIDSDK="$HOME/.buildozer/android/platform"
           # 完整日志存文件
           yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
-            echo "=== 打包失败，提取错误关键行 ==="
-            grep -E "ERROR|error:|Error|failed|Command failed|Cython error|undeclared|does not" /tmp/build_full.log | tail -30
-            echo "=== 完整日志最后30行 ==="
-            tail -30 /tmp/build_full.log
+            echo "=== 打包失败 ==="
+            # 提取 gradle 真实错误
+            grep -A 30 "What went wrong\|Execution failed\|A problem occurred\|Caused by" /tmp/build_full.log | head -40
+            echo "=== 完整日志保存，见 artifact ==="
+            cp /tmp/build_full.log /tmp/build_full_for_artifact.log
             exit 1
           }
           echo "=== 打包完成 ==="
           ls -la bin/ 2>/dev/null || echo "bin 目录不存在"
         timeout-minutes: 60
+
+      - name: 上传完整日志（失败排查用）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-full-log
+          path: /tmp/build_full_for_artifact.log
 
       - name: 上传 APK 产物
         uses: actions/upload-artifact@v4
