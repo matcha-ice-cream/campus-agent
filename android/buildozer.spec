@@ -21,7 +21,7 @@ version.code = 1
 requirements = python3,kivy,requests
 
 # 权限：网络 + 读存储（上传文件需要）
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_DOCUMENTS
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
 # Android 9+ 明文 HTTP 需要允许（App 要连 http://192.168.x.x:8000）
 android.allow_backup = True
