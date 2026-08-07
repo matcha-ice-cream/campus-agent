@@ -17,8 +17,11 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# Kivy 2.1.0 是 p4a 1.6 验证过的稳定版本（2.3.x 的 config.pxi 编译问题）
+# Kivy 2.1.0 是 p4a 1.6 验证过的稳定版本
 requirements = python3,kivy==2.1.0,requests
+
+# 关键：让 Kivy 的 setup.py 执行（生成 config.pxi），否则 Cython 编译报错
+android.ignore_setup_py = False
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
