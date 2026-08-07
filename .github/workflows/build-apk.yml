@@ -39,9 +39,12 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          # 先装新版 Cython（Cython 0.29 与 Python 3.10 有兼容 bug 导致编译失败）
-          pip install "cython<4"
           pip install buildozer
+          # 用最新 p4a（develop 分支，支持 Kivy 2.x）
+          pip uninstall -y python-for-android 2>/dev/null || true
+          git clone --depth 1 https://github.com/kivy/python-for-android.git /tmp/p4a
+          cd /tmp/p4a && pip install -e .
+          cd -
           buildozer --version
 
       - name: 打包 APK
