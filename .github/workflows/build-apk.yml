@@ -7,12 +7,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container:
-      image: kivy/buildozer:latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout 代码
         uses: actions/checkout@v4
+
+      - name: 安装 Buildozer 依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-venv git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
+        env:
+          DEBIAN_FRONTEND: noninteractive
 
       - name: 准备打包目录
         run: |
@@ -23,41 +28,20 @@ jobs:
           cp android/ai助手头像.png build_app/
           ls -la build_app/
 
-      # 第一步：跑一次 buildozer 让源码下载（失败是预期，config.pxi 缺失）
-      - name: 预下载源码（预期失败）
-        working-directory: build_app
-        continue-on-error: true
-        run: |
-          yes | buildozer -v android debug > /tmp/build_first.log 2>&1 || true
-          echo "第一次构建结束（预期失败）"
-
-      # 第二步：找到 Kivy 源码，手动生成 config.pxi（p4a 跳过 setup.py 的替代方案）
-      - name: 手动生成 Kivy config.pxi
+      - name: 安装 Buildozer
         working-directory: build_app
         run: |
-          set -e
-          KIVY_DIR=$(find .buildozer -type d -name "kivy-2*" | head -1)
-          echo "Kivy 源码目录: $KIVY_DIR"
-          if [ -n "$KIVY_DIR" ]; then
-            cd "$KIVY_DIR"
-            python3 -c "from pathlib import Path; Path('kivy/include').mkdir(parents=True, exist_ok=True)"
-            cat > kivy/include/config.pxi << 'EOF'
-DEF KIVY_SDL2 = 1
-DEF KIVY_NO_ARGS = 0
-DEF KIVY_NO_CONSOLELOG = 0
-DEF KIVY_WINDOW = "sdl2"
-DEF KIVY_GL_BACKEND = "sdl2"
-EOF
-            echo "config.pxi 已生成"
-            cd -
-          else
-            echo "警告：未找到 Kivy 源码目录"
-          fi
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install buildozer
+          buildozer --version
 
-      # 第三步：正式打包
       - name: 打包 APK
         working-directory: build_app
         run: |
+          source venv/bin/activate
+          export ANDROIDSDK="$HOME/.buildozer/android/platform"
           yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
             echo "=== 打包失败，关键错误 ==="
             grep -B2 -A8 "config.pxi\|What went wrong\|Execution failed\|error:" /tmp/build_full.log | head -50

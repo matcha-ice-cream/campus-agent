@@ -17,8 +17,9 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# Docker 镜像（kivy/buildozer）自带经典工具链：python3.9 + kivy 2.1.0
-requirements = python3,kivy==2.1.0,requests
+# 用最新 Kivy（2.4.x，支持 Python 3.14，无 config.pxi 老问题）
+# requirements 不指定 python 版本：p4a 用默认（3.14）
+requirements = python3,kivy,requests
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
