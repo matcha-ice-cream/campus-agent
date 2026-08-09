@@ -39,10 +39,9 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install buildozer
-          # 用 p4a 稳定版（1.5.x，明确支持 python3.8-3.11 + Kivy 2.x）
+          # 锁定 Buildozer 1.5.0（与 p4a 1.5.x 匹配的经典版本）
+          pip install buildozer==1.5.0
           pip uninstall -y python-for-android 2>/dev/null || true
-          pip install python-for-android==2024.8.18 2>/dev/null || pip install "python-for-android>=1.5,<2" 2>/dev/null || true
           buildozer --version
 
       - name: 打包 APK
