@@ -40,11 +40,9 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install buildozer
-          # 用最新 p4a（develop 分支，支持 Kivy 2.x）
+          # 用 p4a 稳定版（1.5.x，明确支持 python3.8-3.11 + Kivy 2.x）
           pip uninstall -y python-for-android 2>/dev/null || true
-          git clone --depth 1 https://github.com/kivy/python-for-android.git /tmp/p4a
-          cd /tmp/p4a && pip install -e .
-          cd -
+          pip install python-for-android==2024.8.18 2>/dev/null || pip install "python-for-android>=1.5,<2" 2>/dev/null || true
           buildozer --version
 
       - name: 打包 APK

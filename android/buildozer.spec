@@ -17,9 +17,8 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# 不指定版本：p4a 用内置 Kivy recipe 下载源码并正确处理 config.pxi
-# 不设 ignore_setup_py：让 p4a 默认行为（recipe 管理）
-requirements = python3.9,kivy,requests
+# p4a 稳定版 + Python 3.11 + Kivy 2.1.0（验证过的兼容组合）
+requirements = python3.11,kivy==2.1.0,requests
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
