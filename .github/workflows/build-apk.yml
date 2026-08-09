@@ -3,53 +3,29 @@ name: Build APK
 on:
   push:
     branches: [master, main]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
     steps:
       - name: Checkout 代码
         uses: actions/checkout@v4
 
-      - name: 安装 Buildozer 依赖
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            python3-pip python3-venv git zip unzip openjdk-17-jdk \
-            autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev cmake libffi-dev libssl-dev
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
-      - name: 准备打包目录（把 App 代码放到根）
+      - name: 准备打包目录
         run: |
           mkdir -p build_app
-          # 复制 App 相关文件到打包根目录
           cp android/chat_app.py build_app/main.py
           cp android/buildozer.spec build_app/
           cp android/用户头像.png build_app/
           cp android/ai助手头像.png build_app/
-          echo "=== 打包目录内容 ==="
           ls -la build_app/
-
-      - name: 安装 Buildozer
-        working-directory: build_app
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          # 锁定 Buildozer 1.5.0 + 显式装 Cython（1.5.0 不自带）
-          pip install buildozer==1.5.0 cython==0.29.36
-          pip uninstall -y python-for-android 2>/dev/null || true
-          buildozer --version
 
       - name: 打包 APK
         working-directory: build_app
         run: |
-          source venv/bin/activate
-          export ANDROIDSDK="$HOME/.buildozer/android/platform"
-          # 完整日志存文件
           yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
             echo "=== 打包失败，关键错误 ==="
             grep -B2 -A8 "config.pxi\|What went wrong\|Execution failed\|error:" /tmp/build_full.log | head -50
@@ -60,15 +36,15 @@ jobs:
           ls -la bin/ 2>/dev/null || echo "bin 目录不存在"
         timeout-minutes: 60
 
+      - name: 上传 APK 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: campus-agent-apk
+          path: build_app/bin/*.apk
+
       - name: 上传完整日志（失败排查用）
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: build-full-log
           path: /tmp/build_full_for_artifact.log
-
-      - name: 上传 APK 产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: campus-agent-apk
-          path: build_app/bin/*.apk
