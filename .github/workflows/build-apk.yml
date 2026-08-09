@@ -39,8 +39,8 @@ jobs:
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          # 锁定 Buildozer 1.5.0（与 p4a 1.5.x 匹配的经典版本）
-          pip install buildozer==1.5.0
+          # 锁定 Buildozer 1.5.0 + 显式装 Cython（1.5.0 不自带）
+          pip install buildozer==1.5.0 cython==0.29.36
           pip uninstall -y python-for-android 2>/dev/null || true
           buildozer --version
 
