@@ -23,31 +23,41 @@ jobs:
           cp android/ai助手头像.png build_app/
           ls -la build_app/
 
-      - name: 打包 APK
+      # 第一步：跑一次 buildozer 让源码下载（失败是预期，config.pxi 缺失）
+      - name: 预下载源码（预期失败）
+        working-directory: build_app
+        continue-on-error: true
+        run: |
+          yes | buildozer -v android debug > /tmp/build_first.log 2>&1 || true
+          echo "第一次构建结束（预期失败）"
+
+      # 第二步：找到 Kivy 源码，手动生成 config.pxi（p4a 跳过 setup.py 的替代方案）
+      - name: 手动生成 Kivy config.pxi
         working-directory: build_app
         run: |
-          # 预生成 Kivy 的 config.pxi（p4a 跳过 setup.py 导致缺失）
-          # 先让 buildozer 准备源码（第一次失败是正常的，源码会下载）
-          yes | buildozer -v android debug > /tmp/build_first.log 2>&1 || true
-          # 找 Kivy 源码目录并手动生成 config.pxi
-          KIVY_SRC=$(find .buildozer -type d -name "kivy-2*" 2>/dev/null | head -1)
-          if [ -n "$KIVY_SRC" ]; then
-            echo "找到 Kivy 源码: $KIVY_SRC"
-            cd "$KIVY_SRC"
-            python3 -c "import os; os.makedirs('kivy/include', exist_ok=True)" 2>/dev/null || true
-            # 生成最小 config.pxi（声明 SDL 已找到）
+          set -e
+          KIVY_DIR=$(find .buildozer -type d -name "kivy-2*" | head -1)
+          echo "Kivy 源码目录: $KIVY_DIR"
+          if [ -n "$KIVY_DIR" ]; then
+            cd "$KIVY_DIR"
+            python3 -c "from pathlib import Path; Path('kivy/include').mkdir(parents=True, exist_ok=True)"
             cat > kivy/include/config.pxi << 'EOF'
-            DEF KIVY_SDL2 = 1
-            DEF KIVY_NO_ARGS = 0
-            DEF KIVY_NO_CONSOLELOG = 0
-            DEF KIVY_WINDOW = "sdl2"
-            EOF
+DEF KIVY_SDL2 = 1
+DEF KIVY_NO_ARGS = 0
+DEF KIVY_NO_CONSOLELOG = 0
+DEF KIVY_WINDOW = "sdl2"
+DEF KIVY_GL_BACKEND = "sdl2"
+EOF
             echo "config.pxi 已生成"
             cd -
           else
-            echo "未找到 Kivy 源码，继续尝试打包"
+            echo "警告：未找到 Kivy 源码目录"
           fi
-          # 正式打包
+
+      # 第三步：正式打包
+      - name: 打包 APK
+        working-directory: build_app
+        run: |
           yes | buildozer -v android debug > /tmp/build_full.log 2>&1 || {
             echo "=== 打包失败，关键错误 ==="
             grep -B2 -A8 "config.pxi\|What went wrong\|Execution failed\|error:" /tmp/build_full.log | head -50
