@@ -17,8 +17,11 @@ version = 0.3.0
 version.code = 1
 
 # Kivy 相关
-# p4a 稳定版 + Python 3.11 + Kivy 2.1.0（验证过的兼容组合）
+# python3.11 + Kivy 2.1.0
 requirements = python3.11,kivy==2.1.0,requests
+
+# 显式指定 Python 版本（p4a 有时忽略 requirements 里的 python3.11）
+p4a.args = --python 3.11
 
 # 权限：网络 + 读存储（上传文件需要）
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
