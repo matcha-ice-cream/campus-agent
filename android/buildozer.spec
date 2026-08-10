@@ -1,8 +1,8 @@
 [app]
 
 # App 名称（手机桌面显示的名字）
-# 注意：含中文可能导致 Gradle 打包失败，先用英文名
-title = Campus Agent
+# 说明：ZZUN(郑州大学北校区) + Agent；去掉连字符和空格让桌面完整显示
+title = ZZUN-Agent
 
 # 包名（唯一标识，格式：域名反写.应用名）
 package.name = campusagent
@@ -16,24 +16,31 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.3.0
 version.code = 1
 
+# 屏幕方向：竖屏
+orientation = portrait
+
+# 键盘弹出时窗口自动调整（配合 App 内 Window.softinput_mode）
+android.window_soft_input_mode = adjustResize
+
 # Kivy 相关
-# 用最新 Kivy（2.4.x，支持 Python 3.14，无 config.pxi 老问题）
-# requirements 不指定 python 版本：p4a 用默认（3.14）
 requirements = python3,kivy,requests
 
-# 权限：网络 + 读存储（上传文件需要）
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+# 权限：网络（App 只通过 HTTP 通信，不需要存储权限）
+android.permissions = INTERNET,ACCESS_NETWORK_STATE
 
 # Android 9+ 明文 HTTP 需要允许（App 要连 http://192.168.x.x:8000）
 android.allow_backup = True
 android.allow_insecure_connections = True
 
-# 图标（可选，用 AI 头像）
-# icon.filename = %(source.dir)s/ai助手头像.png
-# android.appicon = %(source.dir)s/ai助手头像.png
+# 图标（512x512 PNG，去水印后）
+icon.filename = %(source.dir)s/zzun_icon.png
+android.appicon = %(source.dir)s/zzun_icon.png
 
-# 打包成 debug APK（最快）
-android.archs = arm64-v8a
+# Loading 界面：暂不配置 presplash（部分机型 presplash 导致启动闪退，待排查）
+# presplash.filename = %(source.dir)s/zzun_presplash.png
+
+# 打包架构：同时支持 64位(arm64-v8a) + 32位(armeabi-v7a) 手机，避免老机型闪退
+android.archs = arm64-v8a,armeabi-v7a
 
 [buildozer]
 

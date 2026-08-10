@@ -11,10 +11,16 @@ from __future__ import annotations
 from db import get_stats, add_schedule
 from agent import agent_query
 from fastapi import FastAPI, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os
 
 app = FastAPI(title="校园信息查询 Agent", version="0.3.0")
+
+# 静态资源目录（视频教程等），如 /static/tutorial.mp4
+_STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+os.makedirs(_STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 
 @app.on_event("startup")
@@ -46,7 +52,9 @@ async def health():
 
 
 @app.post("/api/query", response_model=QueryResponse)
-async def query(req: QueryRequest):
+def query(req: QueryRequest):
+    # 注意：这里用普通 def（非 async def），FastAPI 会把它放进线程池执行，
+    # 避免 agent_query 的同步阻塞调用卡住事件循环导致并发请求排队。
     # Step 0: 输入校验
     question = req.question.strip()
     if not question:

@@ -20,3 +20,10 @@ answer*.txt
 debug*.txt
 check*.txt
 test_*.py
+
+# ===== 构建产物与大文件（安装包通过 README 链接下载，不推 GitHub） =====
+*.apk
+android/zzun_presplash.png
+android/zzun_icon.png
+*.mp4
+应用图标.png
